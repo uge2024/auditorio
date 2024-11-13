@@ -1,0 +1,184 @@
+ /* Estilos del Calendario */
+ .calendar {
+     background: #ffffff;
+     border: 1px solid #e0e0e0;
+     width: 100%;
+     max-width: 100%;
+     padding: 2em;
+     border-radius: 12px;
+     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+     overflow: hidden;
+     transition: transform 0.2s;
+ }
+
+ .calendar:hover {
+     transform: scale(1.01);
+ }
+
+ .calendar__info {
+     display: flex;
+     align-items: center;
+     padding: 0 1em;
+     margin-bottom: 1.5em;
+     justify-content: space-between;
+ }
+
+ .calendar__prev,
+ .calendar__next {
+     cursor: pointer;
+     font-size: 1.5em;
+     padding: 0.75em;
+     background: #ff5100;
+     color: white;
+     border: none;
+     border-radius: 8px;
+     transition: background 0.3s, transform 0.2s;
+     outline: none;
+ }
+
+ .calendar__prev:hover,
+ .calendar__next:hover {
+     background: #f05c06;
+     transform: scale(1.05);
+ }
+
+ .calendar__month-year {
+     flex: 1;
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     margin: 0 1em;
+ }
+
+ .calendar__month,
+ .calendar__year {
+     font-size: 2em;
+     color: #333;
+ }
+
+ .calendar__days {
+     display: flex;
+     justify-content: space-between;
+     margin-bottom: 1.5em;
+ }
+
+ .calendar__day {
+     flex: 1;
+     text-align: center;
+     font-weight: bold;
+     color: #ff4800;
+ }
+
+ .calendar__dates {
+     display: grid;
+     grid-template-columns: repeat(7, 1fr);
+     gap: 1em;
+     margin-bottom: 1.5em;
+ }
+
+ .calendar__date {
+     text-align: center;
+     padding: 1em;
+     background: #f9f9f9;
+     border-radius: 8px;
+     cursor: pointer;
+     transition: background 0.3s, transform 0.2s;
+     font-size: 1em;
+     position: relative;
+ }
+
+ .calendar__date:hover {
+     background: #e0e0e0;
+     transform: scale(1.05);
+ }
+
+ .calendar__date.calendar__today {
+     background: #ffeb3b;
+     border: 2px solid #f57c00;
+     border-radius: 50%;
+     position: relative;
+ }
+
+ .calendar__date.calendar__today::after {
+     content: '';
+     position: absolute;
+     top: 50%;
+     left: 50%;
+     width: 100%;
+     height: 100%;
+     background: rgba(255, 255, 255, 0.6);
+     border-radius: 50%;
+     transform: translate(-50%, -50%);
+     z-index: -1;
+ }
+
+ .indicator {
+     width: 8px;
+     height: 8px;
+     border-radius: 50%;
+     position: absolute;
+     bottom: 5px;
+     left: 50%;
+     transform: translateX(-50%);
+ }
+
+ .modal {
+     display: none;
+     position: fixed;
+     z-index: 1;
+     left: 0;
+     top: 0;
+     width: 100%;
+     height: 100%;
+     overflow: auto;
+     background-color: rgba(0, 0, 0, 0.5);
+ }
+
+ .modal-content {
+     background-color: #ffffff;
+     margin: 5% auto;
+     padding: 20px;
+     border: 1px solid #888;
+     width: 90%;
+     max-width: 600px;
+     border-radius: 10px;
+     overflow-y: auto;
+     max-height: 80vh;
+ }
+
+ .modal-close {
+     color: #aaa;
+     position: absolute;
+     top: 10px;
+     right: 10px;
+     font-size: 28px;
+     font-weight: bold;
+     cursor: pointer;
+     transition: color 0.3s;
+ }
+
+ .modal-close:hover,
+ .modal-close:focus {
+     color: black;
+ }
+
+ .card {
+     border: 1px solid black;
+     padding: 10px;
+     border-radius: 5px;
+     margin-bottom: 10px;
+     transition: background-color 0.3s;
+ }
+
+ .card:hover {
+     background-color: rgba(0, 0, 0, 0.1);
+ }
+
+ .available {
+     background-color: lightgrey;
+ }
+
+ .reserved {
+     background-color: green;
+     /* O usa el color de la reserva */
+ }
