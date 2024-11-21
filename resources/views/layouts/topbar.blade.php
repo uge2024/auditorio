@@ -27,19 +27,32 @@
 
             <!-- Navbar links -->
             <ul class="navbar-nav align-items-center">
-                <li class="nav-item dropdown">
-                    <a class="nav-link text-dark notification-bell unread dropdown-toggle"
-                        data-unread-notifications="true" href="#" role="button" data-bs-toggle="dropdown"
-                        data-bs-display="static" aria-expanded="false">
-                        <svg class="icon icon-sm text-gray-900" fill="currentColor" viewBox="0 0 20 20"
-                            xmlns="http://www.w3.org/2000/svg">
-                            <path
-                                d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z">
-                            </path>
-                        </svg>
-                    </a>
-                    <livewire:notifications />
-                </li>
+                <nav class="navbar navbar-top navbar-expand navbar-dashboard navbar-dark ps-0 pe-2 pb-0">
+                    <div class="container-fluid px-0">
+                        <div class="d-flex justify-content-between w-100" id="navbarSupportedContent">
+
+
+                            <!-- Navbar links -->
+                            <ul class="navbar-nav align-items-center">
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link text-dark notification-bell dropdown-toggle" href="#"
+                                        role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <svg class="icon icon-sm text-gray-900" fill="currentColor" viewBox="0 0 20 20"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path
+                                                d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z">
+                                            </path>
+                                        </svg>
+                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-center mt-2 py-0">
+                                        @livewire('notifications')
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
+
                 <li class="nav-item dropdown ms-lg-3">
                     <a class="nav-link dropdown-toggle pt-1 px-0" href="#" role="button"
                         data-bs-toggle="dropdown" aria-expanded="false">

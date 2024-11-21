@@ -95,13 +95,14 @@
                                     </div>
                                 @endif
                             </div>
+
                             <!-- Modal Structure -->
                             <div id="whatsappModal" class="modal">
                                 <div class="modal-content">
                                     <span class="close" onclick="closeModal()">&times;</span>
                                     <h2>Activar Cuenta</h2>
-
-                                    <form id="whatsappForm" onsubmit="sendToWhatsApp(); return false;">
+                                    <form id="whatsappForm"
+                                        onsubmit="sendToWhatsApp('{{ $adminNumber }}'); return false;">
                                         <label for="name"><strong>Nombre:</strong></label>
                                         <input type="text" id="name" placeholder="Escriba su nombre" required>
 
@@ -116,6 +117,7 @@
                                     </form>
                                 </div>
                             </div>
+
 
                             <!-- Styles -->
                             <style>
@@ -224,22 +226,31 @@
                                 }
 
                                 // Function to send data to WhatsApp
-                                // Function to send data to WhatsApp
-                                function sendToWhatsApp() {
-                                    const name = document.getElementById("name").value;
-                                    const unit = document.getElementById("unit").value;
-                                    const address = document.getElementById("address").value;
-                                    const email = document.getElementById("email").value;
+                                function sendToWhatsApp(adminNumber) {
+                                    const name = document.getElementById("name").value.trim();
+                                    const unit = document.getElementById("unit").value.trim();
+                                    const address = document.getElementById("address").value.trim();
 
-                                    // Construct the message with simulated bold text
-                                    const message =
-                                        `Hola, me gustaría activar mi cuenta. Mis datos son:\n- Nombre: *${name}*\n- Unidad: *${unit}*\n- Dirección: *${address}*\n- Correo Electrónico: *${email}*`;
+                                    // Check if all fields are filled
+                                    if (!name || !unit || !address) {
+                                        alert("Por favor, completa todos los campos antes de enviar.");
+                                        return;
+                                    }
+
+                                    // Construct the WhatsApp message
+                                    const message = `
+                            Hola, me gustaría activar mi cuenta. Mis datos son:
+                            - Nombre: *${name}*
+                            - Unidad: *${unit}*
+                            - Dirección: *${address}*`;
+
                                     const encodedMessage = encodeURIComponent(message);
+                                    const whatsappUrl = `https://wa.me/${adminNumber}?text=${encodedMessage}`;
 
                                     // Open WhatsApp link
-                                    const whatsappUrl = `https://wa.me/64881617?text=${encodedMessage}`;
                                     window.open(whatsappUrl, "_blank");
 
+                                    // Close the modal
                                     closeModal();
                                 }
                             </script>

@@ -9,11 +9,14 @@
  */
 namespace PHPUnit\Metadata\Parser;
 
+use function assert;
 use function class_exists;
 use function method_exists;
 use PHPUnit\Metadata\MetadataCollection;
 
 /**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+ *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
 final class CachingParser implements Parser
@@ -33,6 +36,8 @@ final class CachingParser implements Parser
      */
     public function forClass(string $className): MetadataCollection
     {
+        assert(class_exists($className));
+
         if (isset($this->classCache[$className])) {
             return $this->classCache[$className];
         }
@@ -48,6 +53,9 @@ final class CachingParser implements Parser
      */
     public function forMethod(string $className, string $methodName): MetadataCollection
     {
+        assert(class_exists($className));
+        assert(method_exists($className, $methodName));
+
         $key = $className . '::' . $methodName;
 
         if (isset($this->methodCache[$key])) {
@@ -72,26 +80,9 @@ final class CachingParser implements Parser
         }
 
         $this->classAndMethodCache[$key] = $this->forClass($className)->mergeWith(
-            $this->forMethod($className, $methodName)
+            $this->forMethod($className, $methodName),
         );
 
         return $this->classAndMethodCache[$key];
-    }
-
-    /**
-     * @psalm-param class-string $className
-     * @psalm-param non-empty-string $methodName
-     */
-    public function for(string $className, string $methodName): MetadataCollection
-    {
-        if (!class_exists($className)) {
-            return MetadataCollection::fromArray([]);
-        }
-
-        if (method_exists($className, $methodName)) {
-            return $this->forClassAndMethod($className, $methodName);
-        }
-
-        return $this->forClass($className);
     }
 }

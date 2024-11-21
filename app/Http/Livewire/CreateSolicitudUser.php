@@ -11,6 +11,7 @@ use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
 use Livewire\WithPagination;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Notification;
 
 class CreateSolicitudUser extends Component
 {
@@ -28,7 +29,7 @@ class CreateSolicitudUser extends Component
         'actividad' => '',
         'estado' => 'pendiente',
     ];
-    public $solicitudesPorFecha = [];  // Cambiado a arreglo
+    public $solicitudesPorFecha = [];
     public $horasPermitidas = [
         '08:00',
         '08:30',
@@ -79,7 +80,6 @@ class CreateSolicitudUser extends Component
             return redirect()->route('login');
         }
 
-
         $this->auditorios = Auditorio::all();
         $this->equipos = Equipo::all();
     }
@@ -108,7 +108,7 @@ class CreateSolicitudUser extends Component
     {
         if ($this->solicitud['fecha_uso'] && $this->solicitud['id_auditorio']) {
             $this->solicitudesPorFecha = Solicitud::whereDate('fecha_uso', $this->solicitud['fecha_uso'])
-                ->where('id_auditorio', $this->solicitud['id_auditorio'])  // Filtro adicional por auditorio
+                ->where('id_auditorio', $this->solicitud['id_auditorio'])
                 ->whereIn('estado', ['pendiente', 'aprobado'])
                 ->with('auditorio', 'user')
                 ->get()
@@ -116,6 +116,14 @@ class CreateSolicitudUser extends Component
         }
     }
 
+    public function loadSolicitudes()
+    {
+        $this->solicitudesPorFecha = Solicitud::where('id_usuario', Auth::id())
+            ->with(['auditorio', 'user'])
+            ->orderBy('fecha_uso', 'desc')
+            ->get()
+            ->toArray();
+    }
 
     public function viewSolicitud($id)
     {
@@ -125,11 +133,33 @@ class CreateSolicitudUser extends Component
 
         $this->dispatchBrowserEvent('show-modal');
     }
+
+
     public function exportToPDF($id)
     {
         $solicitud = Solicitud::with(['user', 'equipos', 'auditorio'])->findOrFail($id);
-        $pdf = Pdf::loadView('pdf.solicitud-pdf', ['solicitud' => $solicitud]);
-        return $pdf->download('solicitud-detalles.pdf');
+
+        try {
+            $pdf = Pdf::loadView('pdf.solicitud-pdf', ['solicitud' => $solicitud]);
+            return response()->streamDownload(function () use ($pdf) {
+                echo $pdf->output();
+            }, 'solicitud-detalles.pdf');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error al generar el PDF: ' . $e->getMessage());
+            return redirect()->back();
+        }
+    }
+    public function checkAllowedHours($horaInicio, $horaFinal)
+    {
+        if (
+            !in_array($horaInicio->format('H:i'), $this->horasPermitidas) ||
+            !in_array($horaFinal->format('H:i'), $this->horasPermitidas)
+        ) {
+            throw ValidationException::withMessages([
+                'solicitud.hora_inicio' => 'La hora de inicio debe estar dentro del rango permitido.',
+                'solicitud.hora_final' => 'La hora de finalización debe estar dentro del rango permitido.',
+            ]);
+        }
     }
 
     public function submit()
@@ -140,51 +170,35 @@ class CreateSolicitudUser extends Component
         $horaFinal = Carbon::createFromFormat('H:i', $this->solicitud['hora_final']);
         $duracion = $horaInicio->diffInMinutes($horaFinal);
 
-        if (!in_array($horaInicio->format('H:i'), $this->horasPermitidas) || !in_array($horaFinal->format('H:i'), $this->horasPermitidas)) {
-            throw ValidationException::withMessages([
-                'solicitud.hora_inicio' => 'La hora de inicio debe ser permitida.',
-                'solicitud.hora_final' => 'La hora de finalización debe ser permitida.',
-            ]);
-        }
-
         if ($duracion < 30 || $duracion > 240) {
             throw ValidationException::withMessages([
-                'solicitud.hora_final' => 'La duración debe ser entre 30 minutos y 4 horas.',
+                'solicitud.hora_final' => 'La duración de la solicitud debe estar entre 30 minutos y 4 horas.',
             ]);
         }
 
-        $overlap = Solicitud::where('id_auditorio', $this->solicitud['id_auditorio'])
-            ->where('fecha_uso', $this->solicitud['fecha_uso'])
-            ->where(function ($query) use ($horaInicio, $horaFinal) {
-                $query->whereBetween('hora_inicio', [$horaInicio, $horaFinal])
-                    ->orWhereBetween('hora_final', [$horaInicio, $horaFinal])
-                    ->orWhere(function ($q) use ($horaInicio, $horaFinal) {
-                        $q->where('hora_inicio', '<=', $horaInicio)
-                            ->where('hora_final', '>=', $horaFinal);
-                    });
-            })
-            ->when($this->editMode, function ($query) {
-                $query->where('id_solicitud', '<>', $this->editId);
-            })
-            ->exists();
-
-        if ($overlap) {
-            throw ValidationException::withMessages([
-                'solicitud.id_auditorio' => 'El auditorio ya está solicitado en este horario.',
-            ]);
-        }
+        $this->checkAllowedHours($horaInicio, $horaFinal);
 
         $solicitudData = array_merge($this->solicitud, ['id_usuario' => Auth::id()]);
+
         if ($this->editMode) {
             $solicitud = Solicitud::find($this->editId);
             $solicitud->update($solicitudData);
         } else {
             $solicitud = Solicitud::create($solicitudData);
+
+            Notification::create([
+                'user_id' => 1, // Replace with actual admin ID
+                'message' => 'Nueva solicitud registrada por ' . Auth::user()->name,
+                'type' => 'solicitud',
+                'read' => false,
+            ]);
         }
 
         $solicitud->equipos()->sync($this->selectedEquipos);
 
         session()->flash('message', $this->editMode ? 'Solicitud actualizada exitosamente.' : 'Solicitud creada exitosamente.');
+
+        $this->loadSolicitudes();
         $this->resetForm();
     }
 

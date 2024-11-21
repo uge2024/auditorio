@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace NunoMaduro\Collision;
 
 use Closure;
+use NunoMaduro\Collision\Contracts\RenderableOnCollisionEditor;
 use NunoMaduro\Collision\Contracts\RenderlessEditor;
 use NunoMaduro\Collision\Contracts\RenderlessTrace;
 use NunoMaduro\Collision\Contracts\SolutionsRepository;
@@ -75,15 +76,15 @@ final class Writer
      * Creates an instance of the writer.
      */
     public function __construct(
-        SolutionsRepository $solutionsRepository = null,
-        OutputInterface $output = null,
-        ArgumentFormatter $argumentFormatter = null,
-        Highlighter $highlighter = null
+        ?SolutionsRepository $solutionsRepository = null,
+        ?OutputInterface $output = null,
+        ?ArgumentFormatter $argumentFormatter = null,
+        ?Highlighter $highlighter = null
     ) {
-        $this->solutionsRepository = $solutionsRepository ?: new NullSolutionsRepository();
-        $this->output = $output ?: new ConsoleOutput();
-        $this->argumentFormatter = $argumentFormatter ?: new ArgumentFormatter();
-        $this->highlighter = $highlighter ?: new Highlighter();
+        $this->solutionsRepository = $solutionsRepository ?: new NullSolutionsRepository;
+        $this->output = $output ?: new ConsoleOutput;
+        $this->argumentFormatter = $argumentFormatter ?: new ArgumentFormatter;
+        $this->highlighter = $highlighter ?: new Highlighter;
     }
 
     public function write(Inspector $inspector): void
@@ -92,9 +93,13 @@ final class Writer
 
         $frames = $this->getFrames($inspector);
 
-        $editorFrame = array_shift($frames);
-
         $exception = $inspector->getException();
+
+        if ($exception instanceof RenderableOnCollisionEditor) {
+            $editorFrame = $exception->toCollisionEditor();
+        } else {
+            $editorFrame = array_shift($frames);
+        }
 
         if ($this->showEditor
             && $editorFrame !== null

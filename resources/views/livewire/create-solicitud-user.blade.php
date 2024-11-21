@@ -277,87 +277,72 @@
     </div>
     <div wire:ignore.self class="modal fade" id="solicitudModal" tabindex="-1"
         aria-labelledby="solicitudModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header">
+                <!-- Encabezado del Modal -->
+                <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title" id="solicitudModalLabel">Detalles de la Solicitud</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
                         onclick="closeSolicitudModal()"></button>
                 </div>
+
+                <!-- Cuerpo del Modal -->
                 <div class="modal-body">
                     @if ($selectedSolicitud)
                         <div class="container-fluid">
                             <!-- Usuario y Auditorio -->
-                            <div class="row mb-4">
-                                <div class="col-md-6">
-                                    <div class="border p-4 rounded shadow-sm bg-light">
-                                        <h6 class="text-muted">Información del Usuario</h6>
-                                        <p class="mb-1"><strong>Nombre:</strong>
-                                            {{ $selectedSolicitud->user->first_name }}
-                                            {{ $selectedSolicitud->user->last_name }}</p>
-                                        <p class="mb-0"><strong>Email:</strong>
-                                            {{ $selectedSolicitud->user->email }}</p>
-                                    </div>
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <p class="fw-bold">Usuario:</p>
+                                    <p>{{ $selectedSolicitud->user->first_name }}
+                                        {{ $selectedSolicitud->user->last_name }}</p>
+                                    <p class="fw-bold">Email:</p>
+                                    <p>{{ $selectedSolicitud->user->email }}</p>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="border p-4 rounded shadow-sm bg-light">
-                                        <h6 class="text-muted">Detalles del Auditorio</h6>
-                                        <p class="mb-1"><strong>Nombre:</strong>
-                                            {{ $selectedSolicitud->auditorio->nombre }}</p>
-                                    </div>
+                                <div class="col-6">
+                                    <p class="fw-bold">Auditorio:</p>
+                                    <p>{{ $selectedSolicitud->auditorio->nombre }}</p>
                                 </div>
                             </div>
 
-                            <!-- Fechas y Horarios -->
-                            <div class="row mb-4">
-                                <div class="col-md-6">
-                                    <div class="border p-4 rounded shadow-sm bg-light">
-                                        <h6 class="text-muted">Fecha de Uso</h6>
-                                        <p class="mb-1"><strong>Fecha:</strong> {{ $selectedSolicitud->fecha_uso }}
-                                        </p>
-                                        <p class="mb-0"><strong>Fecha de Solicitud:</strong>
-                                            {{ $selectedSolicitud->created_at->format('d/m/Y H:i') }}</p>
-                                    </div>
+                            <!-- Fecha y Horario -->
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <p class="fw-bold">Fecha de Uso:</p>
+                                    <p>{{ $selectedSolicitud->fecha_uso }}</p>
+                                    <p class="fw-bold">Fecha de Solicitud:</p>
+                                    <p>{{ $selectedSolicitud->created_at->format('d/m/Y H:i') }}</p>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="border p-4 rounded shadow-sm bg-light">
-                                        <h6 class="text-muted">Horario</h6>
-                                        <p class="mb-1"><strong>Hora de Inicio:</strong>
-                                            {{ $selectedSolicitud->hora_inicio }}</p>
-                                        <p class="mb-0"><strong>Hora de Finalización:</strong>
-                                            {{ $selectedSolicitud->hora_final }}</p>
-                                    </div>
+                                <div class="col-6">
+                                    <p class="fw-bold">Hora de Inicio:</p>
+                                    <p>{{ $selectedSolicitud->hora_inicio }}</p>
+                                    <p class="fw-bold">Hora de Finalización:</p>
+                                    <p>{{ $selectedSolicitud->hora_final }}</p>
                                 </div>
                             </div>
 
                             <!-- Equipos -->
-                            <div class="row mb-4">
-                                <div class="col-12">
-                                    <div class="border p-4 rounded shadow-sm bg-light">
-                                        <h6 class="text-muted">Equipos Solicitados</h6>
-                                        <ul class="list-group list-group-flush">
-                                            @foreach ($selectedSolicitud->equipos as $equipo)
-                                                <li class="list-group-item">{{ $equipo->nombre }}</li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                </div>
+                            <div class="mb-3">
+                                <p class="fw-bold">Equipos Solicitados:</p>
+                                <ul class="list-group list-group-flush">
+                                    @foreach ($selectedSolicitud->equipos as $equipo)
+                                        <li class="list-group-item">{{ $equipo->nombre }}</li>
+                                    @endforeach
+                                </ul>
                             </div>
 
                             <!-- Actividad -->
-                            <div class="row">
-                                <div class="col-12">
-                                    <div class="border p-4 rounded shadow-sm bg-light">
-                                        <h6 class="text-muted">Descripción de la Actividad</h6>
-                                        <p>{{ $selectedSolicitud->actividad }}</p>
-                                    </div>
-                                </div>
+                            <div class="mb-3">
+                                <p class="fw-bold">Descripción de la Actividad:</p>
+                                <p>{{ $selectedSolicitud->actividad }}</p>
                             </div>
                         </div>
                     @else
                         <p class="text-center text-muted">No hay detalles disponibles para esta solicitud.</p>
                     @endif
                 </div>
+
+                <!-- Pie del Modal -->
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
                         onclick="closeSolicitudModal()">Cerrar</button>
@@ -371,6 +356,7 @@
             </div>
         </div>
     </div>
+
     <script>
         window.addEventListener('show-modal', event => {
             const myModal = new bootstrap.Modal(document.getElementById('solicitudModal'), {

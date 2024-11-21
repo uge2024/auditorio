@@ -26,6 +26,8 @@ use PHPUnit\Framework\InvalidArgumentException;
 use PHPUnit\Framework\TestStatus\TestStatus;
 
 /**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+ *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
 final class ResultCacheHandler
@@ -38,11 +40,11 @@ final class ResultCacheHandler
      * @throws EventFacadeIsSealedException
      * @throws UnknownSubscriberTypeException
      */
-    public function __construct(ResultCache $cache)
+    public function __construct(ResultCache $cache, Facade $facade)
     {
         $this->cache = $cache;
 
-        $this->registerSubscribers();
+        $this->registerSubscribers($facade);
     }
 
     public function testSuiteStarted(): void
@@ -68,7 +70,7 @@ final class ResultCacheHandler
     {
         $this->cache->setStatus(
             $event->test()->id(),
-            TestStatus::incomplete($event->throwable()->message())
+            TestStatus::incomplete($event->throwable()->message()),
         );
     }
 
@@ -76,7 +78,7 @@ final class ResultCacheHandler
     {
         $this->cache->setStatus(
             $event->test()->id(),
-            TestStatus::risky($event->message())
+            TestStatus::risky($event->message()),
         );
     }
 
@@ -84,7 +86,7 @@ final class ResultCacheHandler
     {
         $this->cache->setStatus(
             $event->test()->id(),
-            TestStatus::error($event->throwable()->message())
+            TestStatus::error($event->throwable()->message()),
         );
     }
 
@@ -92,7 +94,7 @@ final class ResultCacheHandler
     {
         $this->cache->setStatus(
             $event->test()->id(),
-            TestStatus::failure($event->throwable()->message())
+            TestStatus::failure($event->throwable()->message()),
         );
     }
 
@@ -104,7 +106,7 @@ final class ResultCacheHandler
     {
         $this->cache->setStatus(
             $event->test()->id(),
-            TestStatus::skipped($event->message())
+            TestStatus::skipped($event->message()),
         );
 
         $this->cache->setTime($event->test()->id(), $this->duration($event));
@@ -138,9 +140,9 @@ final class ResultCacheHandler
      * @throws EventFacadeIsSealedException
      * @throws UnknownSubscriberTypeException
      */
-    private function registerSubscribers(): void
+    private function registerSubscribers(Facade $facade): void
     {
-        Facade::registerSubscribers(
+        $facade->registerSubscribers(
             new TestSuiteStartedSubscriber($this),
             new TestSuiteFinishedSubscriber($this),
             new TestPreparedSubscriber($this),

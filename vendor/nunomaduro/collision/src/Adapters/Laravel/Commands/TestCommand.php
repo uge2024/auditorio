@@ -42,6 +42,7 @@ class TestCommand extends Command
         {--profile : Lists top 10 slowest tests}
         {--recreate-databases : Indicates if the test databases should be re-created}
         {--drop-databases : Indicates if the test databases should be dropped}
+        {--without-databases : Indicates if database configuration should be performed}
     ';
 
     /**
@@ -235,11 +236,21 @@ class TestCommand extends Command
                 && ! Str::startsWith($option, '--min');
         }));
 
+        return array_merge($this->commonArguments(), ['--configuration='.$this->getConfigurationFile()], $options);
+    }
+
+    /**
+     * Get the configuration file.
+     *
+     * @return string
+     */
+    protected function getConfigurationFile()
+    {
         if (! file_exists($file = base_path('phpunit.xml'))) {
             $file = base_path('phpunit.xml.dist');
         }
 
-        return array_merge($this->commonArguments(), ["--configuration=$file"], $options);
+        return $file;
     }
 
     /**
@@ -261,19 +272,16 @@ class TestCommand extends Command
                 && ! Str::startsWith($option, '-p')
                 && ! Str::startsWith($option, '--parallel')
                 && ! Str::startsWith($option, '--recreate-databases')
-                && ! Str::startsWith($option, '--drop-databases');
+                && ! Str::startsWith($option, '--drop-databases')
+                && ! Str::startsWith($option, '--without-databases');
         }));
 
-        if (! file_exists($file = base_path('phpunit.xml'))) {
-            $file = base_path('phpunit.xml.dist');
-        }
-
         $options = array_merge($this->commonArguments(), [
-            "--configuration=$file",
+            '--configuration='.$this->getConfigurationFile(),
             "--runner=\Illuminate\Testing\ParallelRunner",
         ], $options);
 
-        $inputDefinition = new InputDefinition();
+        $inputDefinition = new InputDefinition;
         Options::setInputDefinition($inputDefinition);
         $input = new ArgvInput($options, $inputDefinition);
 
@@ -327,6 +335,7 @@ class TestCommand extends Command
             'LARAVEL_PARALLEL_TESTING' => 1,
             'LARAVEL_PARALLEL_TESTING_RECREATE_DATABASES' => $this->option('recreate-databases'),
             'LARAVEL_PARALLEL_TESTING_DROP_DATABASES' => $this->option('drop-databases'),
+            'LARAVEL_PARALLEL_TESTING_WITHOUT_DATABASES' => $this->option('without-databases'),
         ];
     }
 
@@ -370,7 +379,7 @@ class TestCommand extends Command
 
         $vars = [];
 
-        foreach ((new Parser())->parse($content) as $entry) {
+        foreach ((new Parser)->parse($content) as $entry) {
             $vars[] = $entry->getName();
         }
 
@@ -385,21 +394,5 @@ class TestCommand extends Command
     protected function isParallelDependenciesInstalled()
     {
         return class_exists(\ParaTest\ParaTestCommand::class);
-    }
-
-    /**
-     * Get the composer command for the environment.
-     *
-     * @return string
-     */
-    protected function findComposer()
-    {
-        $composerPath = getcwd().'/composer.phar';
-
-        if (file_exists($composerPath)) {
-            return '"'.PHP_BINARY.'" '.$composerPath;
-        }
-
-        return 'composer';
     }
 }

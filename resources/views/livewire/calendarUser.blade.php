@@ -143,8 +143,9 @@
         /* Modal Styles */
         .modal {
             display: none;
+
             position: fixed;
-            z-index: 1;
+            z-index: 1050;
             left: 0;
             top: 0;
             width: 100%;
@@ -161,6 +162,7 @@
             max-width: 700px;
             width: 90%;
             height: 800px;
+            z-index: 1060;
         }
 
         .close {

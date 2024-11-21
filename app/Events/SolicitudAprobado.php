@@ -6,7 +6,7 @@ use App\Models\Solicitud;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class Solicitudaprobado
+class SolicitudAprobado
 {
     use Dispatchable, SerializesModels;
 
@@ -15,11 +15,10 @@ class Solicitudaprobado
     /**
      * Create a new event instance.
      *
-     * @return void
+     * @param Solicitud $solicitud
      */
     public function __construct(Solicitud $solicitud)
     {
-        // Asignamos la solicitud aprobado al evento
         $this->solicitud = $solicitud;
     }
 }

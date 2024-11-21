@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,15 +12,18 @@
             position: relative;
             color: #333;
         }
+
         header {
             text-align: center;
             margin-bottom: 20px;
             position: relative;
         }
+
         .title {
             font-size: 24px;
             font-weight: bold;
         }
+
         .watermark {
             position: absolute;
             top: 50%;
@@ -30,26 +34,33 @@
             color: #000;
             z-index: -1;
         }
+
         main {
             padding: 0 20px;
         }
+
         h1 {
             text-align: center;
             margin-bottom: 20px;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
         }
-        th, td {
+
+        th,
+        td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
         }
+
         th {
             background-color: #f2f2f2;
         }
+
         footer {
             position: fixed;
             bottom: 0;
@@ -60,17 +71,20 @@
             border-top: 1px solid #ddd;
             padding: 10px 0;
         }
+
         .page-number {
             position: absolute;
             bottom: 10px;
             right: 20px;
         }
+
         .summary {
             font-size: 14px;
             font-weight: bold;
             margin-top: 20px;
             text-align: right;
         }
+
         .comments {
             margin-top: 20px;
             font-style: italic;
@@ -78,19 +92,26 @@
 
         @media (forced-colors: active) {
             body {
-                background-color: Window; /* Color de fondo del sistema */
-                color: WindowText; /* Color de texto del sistema */
+                background-color: Window;
+                /* Color de fondo del sistema */
+                color: WindowText;
+                /* Color de texto del sistema */
             }
+
             table {
                 border-color: WindowText;
             }
+
             th {
-                background-color: Highlight; /* Color de fondo resaltado */
-                color: HighlightText; /* Color de texto resaltado */
+                background-color: Highlight;
+                /* Color de fondo resaltado */
+                color: HighlightText;
+                /* Color de texto resaltado */
             }
         }
     </style>
 </head>
+
 <body>
 
     <header>
@@ -124,7 +145,8 @@
             </thead>
             <tbody>
                 @foreach ($reportes as $solicitud)
-                    <tr style="background-color: {{ $solicitud->estado == 'aprobado' ? '#e8f5e9' : ($solicitud->estado == 'rechazado' ? '#ffebee' : '#fff') }};">
+                    <tr
+                        style="background-color: {{ $solicitud->estado == 'aprobado' ? '#e8f5e9' : ($solicitud->estado == 'rechazado' ? '#ffebee' : '#fff') }};">
                         <td>{{ $solicitud->id_solicitud }}</td>
                         <td>{{ $solicitud->user->first_name ?? 'N/A' }}</td>
                         <td>{{ $solicitud->user->unidad ?? 'N/A' }}</td>
@@ -151,9 +173,11 @@
 
     <footer>
         <div class="page-number">Página: {PAGE_NUM} de {PAGE_COUNT}</div>
-        <p>&copy; {{ now()->format('Y') }} Gobierno Autónomo Departamental de Cochabamba. Todos los derechos reservados.</p>
+        <p>&copy; {{ now()->format('Y') }} Gobierno Autónomo Departamental de Cochabamba. Todos los derechos
+            reservados.</p>
         <p>Contacto: info@gobierno.gob.bo | Tel: (123) 456-7890</p>
     </footer>
 
 </body>
+
 </html>

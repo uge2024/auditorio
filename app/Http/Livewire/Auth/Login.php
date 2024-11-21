@@ -11,7 +11,7 @@ class Login extends Component
     public $password = '';
     public $remember_me = false;
     public $activationError = ''; // Add this line
-
+    public $adminNumber = '';
     protected $rules = [
         'email' => 'required|email:rfc,dns',
         'password' => 'required|min:6',
@@ -33,10 +33,11 @@ class Login extends Component
 
         // Verificar si el usuario está inactivo
         if ($user && $user->estatus === 'inactivo') {
-            $this->activationError = 'Tu cuenta está inactiva. Comunícate con la unidad responsable.'; // Update this line
+            $admin = User::where('tipo_usuario', 'admin')->first();
+            $this->activationError = 'Tu cuenta está inactiva. Comunícate con la unidad responsable al número '
+                . ($admin ? $admin->number : 'no disponible') . '.';
             return;
         }
-
         // Intentar autenticación si el usuario está activo
         if (auth()->attempt(['email' => $this->email, 'password' => $this->password], $this->remember_me)) {
             auth()->login($user, $this->remember_me);

@@ -117,76 +117,76 @@ class CreateSolicitud extends Component
 
 
 
-public function submit()
-{
-    $this->validate();
+    public function submit()
+    {
+        $this->validate();
 
-    $horaInicio = Carbon::createFromFormat('H:i', $this->solicitud['hora_inicio']);
-    $horaFinal = Carbon::createFromFormat('H:i', $this->solicitud['hora_final']);
-    $horaInicioMargen = $horaInicio->copy()->addMinute();
-    $horaFinalMargen = $horaFinal->copy()->subMinute();
-    $duracion = $horaInicio->diffInMinutes($horaFinal);
+        $horaInicio = Carbon::createFromFormat('H:i', $this->solicitud['hora_inicio']);
+        $horaFinal = Carbon::createFromFormat('H:i', $this->solicitud['hora_final']);
+        $horaInicioMargen = $horaInicio->copy()->addMinute();
+        $horaFinalMargen = $horaFinal->copy()->subMinute();
+        $duracion = $horaInicio->diffInMinutes($horaFinal);
 
-    if (!in_array($horaInicio->format('H:i'), $this->horasPermitidas) || !in_array($horaFinal->format('H:i'), $this->horasPermitidas)) {
-        throw ValidationException::withMessages([
-            'solicitud.hora_inicio' => 'La hora de inicio debe ser una de las horas permitidas.',
-            'solicitud.hora_final' => 'La hora de finalización debe ser una de las horas permitidas.',
-        ]);
+        if (!in_array($horaInicio->format('H:i'), $this->horasPermitidas) || !in_array($horaFinal->format('H:i'), $this->horasPermitidas)) {
+            throw ValidationException::withMessages([
+                'solicitud.hora_inicio' => 'La hora de inicio debe ser una de las horas permitidas.',
+                'solicitud.hora_final' => 'La hora de finalización debe ser una de las horas permitidas.',
+            ]);
+        }
+
+        if ($duracion < 30 || $duracion > 240) {
+            throw ValidationException::withMessages([
+                'solicitud.hora_final' => 'La duración de la solicitud debe estar entre 30 minutos y 4 horas.',
+            ]);
+        }
+
+        $this->checkAllowedHours($horaInicio, $horaFinal);
+
+        $overlap = Solicitud::where('id_auditorio', $this->solicitud['id_auditorio'])
+            ->where('fecha_uso', $this->solicitud['fecha_uso'])
+            ->where(function ($query) use ($horaInicioMargen, $horaFinalMargen) {
+                $query->where(function ($q) use ($horaInicioMargen, $horaFinalMargen) {
+                    $q->whereBetween('hora_inicio', [$horaInicioMargen->format('H:i'), $horaFinalMargen->format('H:i')])
+                        ->orWhereBetween('hora_final', [$horaInicioMargen->format('H:i'), $horaFinalMargen->format('H:i')])
+                        ->orWhere(function ($q) use ($horaInicioMargen, $horaFinalMargen) {
+                            $q->where('hora_inicio', '<=', $horaInicioMargen->format('H:i'))
+                                ->where('hora_final', '>=', $horaFinalMargen->format('H:i'));
+                        });
+                });
+            })
+            ->when($this->editMode, function ($query) {
+                $query->where('id_solicitud', '<>', $this->editId);
+            })
+            ->exists();
+
+        if ($overlap) {
+            throw ValidationException::withMessages([
+                'solicitud.id_auditorio' => 'El auditorio ya está solicitado en el horario seleccionado.',
+            ]);
+        }
+
+        $solicitudData = array_merge($this->solicitud, ['id_usuario' => Auth::id()]);
+
+        if ($this->editMode) {
+            $solicitud = Solicitud::find($this->editId);
+            $solicitud->update($solicitudData);
+        } else {
+            $solicitud = Solicitud::create($solicitudData);
+
+            // Create notification for admin
+            Notification::create([
+                'user_id' => 1, // Replace '1' with the actual admin user ID
+                'message' => 'A new solicitud has been registered by ' . Auth::user()->name,
+                'read' => false, // Mark as unread initially
+            ]);
+        }
+
+        $solicitud->equipos()->sync($this->selectedEquipos);
+
+        session()->flash('message', $this->editMode ? 'Solicitud actualizada exitosamente.' : 'Solicitud creada exitosamente.');
+        $this->loadSolicitudes();
+        $this->resetForm();
     }
-
-    if ($duracion < 30 || $duracion > 240) {
-        throw ValidationException::withMessages([
-            'solicitud.hora_final' => 'La duración de la solicitud debe estar entre 30 minutos y 4 horas.',
-        ]);
-    }
-
-    $this->checkAllowedHours($horaInicio, $horaFinal);
-
-    $overlap = Solicitud::where('id_auditorio', $this->solicitud['id_auditorio'])
-        ->where('fecha_uso', $this->solicitud['fecha_uso'])
-        ->where(function ($query) use ($horaInicioMargen, $horaFinalMargen) {
-            $query->where(function ($q) use ($horaInicioMargen, $horaFinalMargen) {
-                $q->whereBetween('hora_inicio', [$horaInicioMargen->format('H:i'), $horaFinalMargen->format('H:i')])
-                    ->orWhereBetween('hora_final', [$horaInicioMargen->format('H:i'), $horaFinalMargen->format('H:i')])
-                    ->orWhere(function ($q) use ($horaInicioMargen, $horaFinalMargen) {
-                        $q->where('hora_inicio', '<=', $horaInicioMargen->format('H:i'))
-                            ->where('hora_final', '>=', $horaFinalMargen->format('H:i'));
-                    });
-            });
-        })
-        ->when($this->editMode, function ($query) {
-            $query->where('id_solicitud', '<>', $this->editId);
-        })
-        ->exists();
-
-    if ($overlap) {
-        throw ValidationException::withMessages([
-            'solicitud.id_auditorio' => 'El auditorio ya está solicitado en el horario seleccionado.',
-        ]);
-    }
-
-    $solicitudData = array_merge($this->solicitud, ['id_usuario' => Auth::id()]);
-
-    if ($this->editMode) {
-        $solicitud = Solicitud::find($this->editId);
-        $solicitud->update($solicitudData);
-    } else {
-        $solicitud = Solicitud::create($solicitudData);
-
-        // Create notification for admin
-        Notification::create([
-            'user_id' => 1, // Replace '1' with the actual admin user ID
-            'message' => 'A new solicitud has been registered by ' . Auth::user()->name,
-            'read' => false, // Mark as unread initially
-        ]);
-    }
-
-    $solicitud->equipos()->sync($this->selectedEquipos);
-
-    session()->flash('message', $this->editMode ? 'Solicitud actualizada exitosamente.' : 'Solicitud creada exitosamente.');
-    $this->loadSolicitudes();
-    $this->resetForm();
-}
 
 
     protected function checkAllowedHours($horaInicio, $horaFinal)
@@ -237,7 +237,16 @@ public function submit()
         $solicitud = Solicitud::find($id);
         if ($solicitud) {
             $solicitud->update(['estado' => 'aprobado']);
-            session()->flash('message', 'Solicitud aprobado.');
+
+            // Notificación para usuario
+            Notification::create([
+                'user_id' => $solicitud->id_usuario,
+                'message' => 'Tu solicitud ha sido aprobada.',
+                'type' => 'interaccion',
+                'read' => false,
+            ]);
+
+            session()->flash('message', 'Solicitud aprobada.');
             $this->loadSolicitudes();
         } else {
             session()->flash('error', 'Solicitud no encontrada.');
@@ -249,12 +258,22 @@ public function submit()
         $solicitud = Solicitud::find($id);
         if ($solicitud) {
             $solicitud->update(['estado' => 'rechazado']);
+
+            // Notificación para usuario
+            Notification::create([
+                'user_id' => $solicitud->id_usuario,
+                'message' => 'Tu solicitud ha sido rechazada.',
+                'type' => 'interaccion',
+                'read' => false,
+            ]);
+
             session()->flash('message', 'Solicitud rechazada.');
             $this->loadSolicitudes();
         } else {
             session()->flash('error', 'Solicitud no encontrada.');
         }
     }
+
 
     public function resetForm()
     {

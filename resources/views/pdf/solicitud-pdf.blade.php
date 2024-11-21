@@ -8,33 +8,64 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
         }
 
         .container {
-            margin: 0 auto;
+            margin: 20px auto;
             padding: 20px;
             width: 80%;
+            background-color: #fff;
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
             text-align: center;
-            color: #333;
+            color: #007BFF;
+            font-size: 24px;
+            margin-bottom: 20px;
         }
 
         .section {
             margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f7f9fc;
         }
 
         .section h2 {
-            font-size: 1.2em;
+            font-size: 18px;
             color: #555;
+            border-bottom: 1px solid #ddd;
             margin-bottom: 10px;
+            padding-bottom: 5px;
         }
 
-        .section p {
+        .section p,
+        .section ul {
             margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .section ul {
+            padding-left: 20px;
+        }
+
+        .section ul li {
+            margin-bottom: 5px;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -69,9 +100,11 @@
         <div class="section">
             <h2>Equipos Solicitados</h2>
             <ul>
-                @foreach ($solicitud->equipos as $equipo)
+                @forelse ($solicitud->equipos as $equipo)
                     <li>{{ $equipo->nombre }}</li>
-                @endforeach
+                @empty
+                    <p>No se solicitaron equipos.</p>
+                @endforelse
             </ul>
         </div>
 
@@ -79,6 +112,11 @@
         <div class="section">
             <h2>Descripción de la Actividad</h2>
             <p>{{ $solicitud->actividad }}</p>
+        </div>
+
+        <!-- Pie de Página -->
+        <div class="footer">
+            Generado automáticamente por el Sistema de Auditorios | &copy; {{ now()->year }}
         </div>
     </div>
 </body>
